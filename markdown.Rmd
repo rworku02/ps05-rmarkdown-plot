@@ -230,7 +230,7 @@ ggplot(gapminder_2019, aes(x = avg_gdp, y = avg_life_expectancy, size = totalPop
 
 3)
 
-Comparing the two plots, we can see a clear trend of global economic growth and improvement in life expectancy over the last 60 years. In 1960, there were clear differences between countries in terms of GDP per capita and life expectancy.
+Comparing the two plots, we can see a ***clear trend*** of global economic growth and improvement in life expectancy over the last 60 years. In 1960, there were clear differences between countries in terms of GDP per capita and life expectancy.
 There is still a lot of variation between countries and regions, showing that
 there's work to be done to achieve global economic and health equality.
 
@@ -257,10 +257,10 @@ continent_LE_growth <- LE_growth %>%
   summarize(avg_LE_growth = mean(LE_growth))
 continent_LE_growth
 ```
-Countries in Africa had the highest growth in life expectancy. This makes sense
+Countries in Africa had the _highest_ growth in life expectancy. This makes sense
 since healthcare has gotten more advanced since 1960 which has helped increase
 the life expectancy in regions that were struggling. The more advanced countries
-in Europe had a smaller raise in life expectancy since they've always had a
+in Europe had a _smaller_ raise in life expectancy since they've always had a
 better life expectancy in general.
 
 6)
