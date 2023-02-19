@@ -100,8 +100,8 @@ ggplot(country_data, aes(x=co2, y=time, col= factor(name))) +
        col = "Country")
 
 ```
-I can see from the plot that China has the most amount of emissions that are
-steady increasing. The United states had the highest jump in co2 emissions 
+I can see from the plot that China has the _most_ amount of emissions that are
+steady increasing. The United states had the _highest_ jump in co2 emissions 
 though, but China overtook the US and continues to grow in their emissions.
 
 3)
@@ -117,7 +117,7 @@ ggplot(country_data_pc, aes(x=co2_PC, y=time, col= factor(name))) +
   labs(x = "CO2 emissions per capita", y = "Year", 
        col = "Country")
 ```
-I can see that China and the United States contributed the most the co2
+I can see that China and the United States contributed the ***most*** the co2
 emissions per captia, with India as a close third to them.
 
 4)
@@ -128,7 +128,7 @@ gapminder %>%
   arrange(rank(desc(mean_co2_pc)))
 ```
 The countries in the European and American regions are the countries with
-the higher co2 emissions per captia
+the _higher_ co2 emissions per captia
 
 5)
 ```{r message=FALSE, warning=FALSE}
