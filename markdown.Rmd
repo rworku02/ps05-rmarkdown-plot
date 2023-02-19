@@ -5,26 +5,300 @@ date: "2023-02-18"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+
+### 1 Load and Check Data
+```{r message=FALSE}
+library(tidyverse)
+gapminder <- read_delim("data/gapminder.csv.bz2")
+dim(gapminder)
+```
+A sample of data:
+```{r message=FALSE}
+gapminder %>% 
+  sample_n(5)
 ```
 
-## R Markdown
+### 2 Descriptive statistics
+1)
+```{r}
+iso2 <- distinct(gapminder, iso2)
+iso3 <- distinct(gapminder, iso3)
+name <- distinct(gapminder, name)
+iso2
+iso3
+name
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+gapminder %>% 
+  select(iso2, iso3, name) %>% 
+  mutate(alliso2 = n_distinct(iso2),
+         alliso3 = n_distinct(iso3),
+         allname = n_distinct(name))
 ```
 
-## Including Plots
+2a)
+```{r}
+names_per_iso2 <- gapminder %>%
+  group_by(iso2) %>%
+  summarize(num_names = n_distinct(name)) %>%
+  arrange(desc(num_names))
+names_per_iso2
+  
+duplicated_names_per_iso2 <- names_per_iso2[names_per_iso2$num_names > 1,]
+duplicated_names_per_iso2
 
-You can also embed plots, for example:
+```
+2b)
+```{r}
+iso3_per_name <- gapminder %>%
+  group_by(name) %>%
+  summarize(num_iso3 = n_distinct(iso3)) %>%
+  arrange(desc(num_iso3))
+iso3_per_name
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+duplicated_iso3_per_name <- iso3_per_name[iso3_per_name$num_iso3 > 1,]
+duplicated_iso3_per_name
+```
+3)
+```{r}
+min_year <- min(gapminder$time, na.rm = TRUE)
+max_year <- max(gapminder$time, na.rm = TRUE)
+min_year
+max_year
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+### 3 CO2 emissions
+
+1)
+```{r}
+co2_missing <- gapminder %>% 
+  group_by(time) %>% 
+  summarize(n_missing = sum(is.na(co2))) %>% 
+  arrange(desc(n_missing)) %>% 
+  slice_head()
+
+co2pc_missing <- gapminder %>% 
+  group_by(time) %>% 
+  summarize(n_missing = sum(is.na(co2_PC))) %>% 
+  arrange(desc(n_missing)) %>% 
+  slice_head()
+
+co2_missing
+co2pc_missing
+```
+
+2)
+```{r message=FALSE, warning=FALSE}
+countries <- c("United States of America", "China", "India", "Japan", "Malta")
+country_data <- gapminder %>% 
+  filter(name %in% countries) %>% 
+  select(name, time, co2)
+country_data
+
+ggplot(country_data, aes(x=co2, y=time, col= factor(name))) +
+  geom_line() +
+  labs(x = "CO2 emissions", y = "Year", 
+       col = "Country")
+
+```
+I can see from the plot that China has the most amount of emissions that are
+steady increasing. The United states had the highest jump in co2 emissions 
+though, but China overtook the US and continues to grow in their emissions.
+
+3)
+```{r message=FALSE, warning=FALSE}
+countries <- c("United States of America", "China", "India", "Japan", "Malta")
+country_data_pc <- gapminder %>% 
+  filter(name %in% countries) %>% 
+  select(name, time, co2_PC)
+country_data_pc
+
+ggplot(country_data_pc, aes(x=co2_PC, y=time, col= factor(name))) +
+  geom_line() +
+  labs(x = "CO2 emissions per capita", y = "Year", 
+       col = "Country")
+```
+I can see that China and the United States contributed the most the co2
+emissions per captia, with India as a close third to them.
+
+4)
+```{r}
+gapminder %>%
+  group_by(region) %>%
+  summarise(mean_co2_pc = mean(co2_PC, na.rm = TRUE)) %>% 
+  arrange(rank(desc(mean_co2_pc)))
+```
+The countries in the European and American regions are the countries with
+the higher co2 emissions per captia
+
+5)
+```{r message=FALSE, warning=FALSE}
+avg_co2_pc <- gapminder %>%
+  filter(!is.na(co2_PC)) %>%
+  filter(!is.na(region)) %>%
+  group_by(time, region) %>%
+  summarize(mean_co2_pc = mean(co2_PC))
+
+avg_co2_pc <- avg_co2_pc %>%
+  filter(time %in% c(1960, 2016))
+avg_co2_pc
+
+ggplot(avg_co2_pc, aes(x = region, y = mean_co2_pc, fill = factor(time))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Year", y = "Average CO2 Emissions per Capita", fill = "Region") +
+  ggtitle("Average CO2 Emissions per Capita by Continent")
+```
+
+6) COMMENT
+```{r message=FALSE, warning=FALSE}
+co2_by_continent <- gapminder %>% 
+  filter(time == 2019) %>% 
+  group_by(region, time)
+co2_by_continent
+
+top_co2_by_continent <- co2_by_continent %>%
+  arrange(desc(co2_PC)) %>% 
+  group_by(region) %>%
+  slice_head(n = 3)
+
+bottom_co2_by_continent <- co2_by_continent %>% 
+  arrange(co2_PC) %>% 
+  group_by(region) %>%
+  slice_head(n = 3)
+top_co2_by_continent 
+bottom_co2_by_continent
+
+```
+
+### 4 GPD per capita
+
+1) COMMENT ON USING REGION INSTEAD OF COUNTRY
+```{r}
+gapminder_1960 <- gapminder %>% 
+  filter(time == "1960") %>% 
+  group_by(name, totalPopulation, region) %>% 
+  summarise(avg_life_expectancy = mean(lifeExpectancy, na.rm = TRUE),
+            avg_gdp = mean(GDP_PC, na.rm = TRUE)) %>% 
+  filter(!is.na(avg_life_expectancy)) %>% 
+  filter(!is.na(avg_gdp)) %>% 
+  filter(!is.na(name))
+gapminder_1960
+
+ggplot(gapminder_1960, aes(x = avg_gdp, y = avg_life_expectancy, size = totalPopulation, color = region)) +
+  geom_point(alpha = 0.7) +
+  scale_color_discrete(name = "Continent") +
+  scale_size(range = c(1, 10), breaks = c(1e6, 1e7, 1e8, 1e9),
+             labels = c("1M", "10M", "100M", "1B")) +
+  labs(x = "GDP per capita (constant 2010 US$)",
+       y = "Life expectancy (years)",
+       title = "GDP per capita versus Life Expectancy by Country (1960)",
+       subtitle = "Point size is proportional to population size") +
+  theme_bw()
+```
+The scatter plot shows a positive relationship between GDP per capita and life 
+expectancy, which is expected since higher GDP per capita is generally 
+associated with better access to healthcare, nutrition, and living conditions. 
+
+2)
+```{r message=FALSE, warning=FALSE}
+gapminder_2019 <- gapminder %>% 
+  filter(time == "2019") %>% 
+  group_by(name, totalPopulation, region) %>% 
+  summarise(avg_life_expectancy = mean(lifeExpectancy, na.rm = TRUE),
+            avg_gdp = mean(GDP_PC, na.rm = TRUE)) %>% 
+  filter(!is.na(avg_life_expectancy)) %>% 
+  filter(!is.na(avg_gdp)) %>% 
+  filter(!is.na(name))
+gapminder_1960
+
+ggplot(gapminder_2019, aes(x = avg_gdp, y = avg_life_expectancy, size = totalPopulation, color = region)) +
+  geom_point(alpha = 0.7) +
+  scale_color_discrete(name = "Continent") +
+  scale_size(range = c(1, 10), breaks = c(1e6, 1e7, 1e8, 1e9),
+             labels = c("1M", "10M", "100M", "1B")) +
+  labs(x = "GDP per capita (constant 2010 US$)",
+       y = "Life expectancy (years)",
+       title = "GDP per capita versus Life Expectancy by Country (2019)",
+       subtitle = "Point size is proportional to population size") +
+  theme_bw()
+```
+
+
+3)
+Comparing the two plots, we can see a clear trend of global economic growth and improvement in life expectancy over the last 60 years. In 1960, there were clear differences between countries in terms of GDP per capita and life expectancy.
+There is still a lot of variation between countries and regions, showing that
+there's work to be done to achieve global economic and health equality.
+
+4)
+```{r message=FALSE, warning=FALSE}
+gapminder %>%
+  filter(time %in% c(1960, 2019)) %>%
+  group_by(time, region) %>%
+  summarize(avg_life_exp = mean(lifeExpectancy, na.rm = TRUE))
+```
+These results fit with the results of the scatter plots showing how the average
+life expectancy in different regions have improved between the year 1960 till
+2019.
+
+5)
+```{r}
+LE_growth <- gapminder %>% 
+  filter(time %in% c(1960, 2019)) %>% 
+  group_by(region) %>% 
+  mutate(LE_growth = last(lifeExpectancy) - first(lifeExpectancy))
+
+continent_LE_growth <- LE_growth %>% 
+  group_by(region) %>% 
+  summarize(avg_LE_growth = mean(LE_growth))
+continent_LE_growth
+```
+Countries in Africa had the highest growth in life expectancy. This makes sense
+since healthcare has gotten more advanced since 1960 which has helped increase
+the life expectancy in regions that were struggling. The more advanced countries
+in Europe had a smaller raise in life expectancy since they've always had a
+better life expectancy in general.
+
+7)
+```{r}
+LE_rank_1960 <- gapminder %>% 
+  filter(time == 1960,
+         !is.na(name)) %>% 
+  arrange(desc(-lifeExpectancy)) %>% 
+  mutate(ranking = rank(-lifeExpectancy)) %>% 
+  select(name, time, ranking) %>% 
+  filter(name == "United States of America")
+LE_rank_1960
+
+LE_rank_2019 <- gapminder %>% 
+  filter(time == 2019,
+         !is.na(name)) %>% 
+  arrange(desc(-lifeExpectancy)) %>% 
+  mutate(ranking = rank(-lifeExpectancy)) %>% 
+  select(name, time, ranking) %>% 
+  filter(name == "United States of America")
+LE_rank_2019
+```
+
+8)
+```{r}
+gapminder %>%
+  filter(time %in% c(1960, 2019)) %>%
+  summarize(num_countries = n_distinct(name)) %>% 
+  mutate(rank_LE = rank(gapminder$lifeExpectancy)) %>%
+  mutate(relative_rank = rank_LE / num_countries) %>% 
+  filter(name == "United States of America") %>%
+  select(time, rank, num_countries, relative_rank)
+
+
+num_countries <- gapminder %>%
+  filter(!is.na(lifeExpectancy)) %>%
+  group_by(time) %>%
+  summarize(num_countries = n())
+num_countries
+
+relative_rank <- gapminder %>%
+  filter(!is.na(lifeExpectancy)) %>%
+  group_by(time) %>%
+  mutate(rank = dense_rank(-lifeExpectancy) / num_countries)
+relative_rank
+```
+
