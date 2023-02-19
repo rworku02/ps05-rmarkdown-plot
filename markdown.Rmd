@@ -167,11 +167,13 @@ bottom_co2_by_continent <- co2_by_continent %>%
 top_co2_by_continent 
 bottom_co2_by_continent
 
+# I couldn't get the top and bottom three results even after trying the head
+# function or by slicing.
 ```
 
 ### 4 GPD per capita
 
-1) COMMENT ON USING REGION INSTEAD OF COUNTRY
+1)
 ```{r}
 gapminder_1960 <- gapminder %>% 
   filter(time == "1960") %>% 
@@ -194,6 +196,9 @@ ggplot(gapminder_1960, aes(x = avg_gdp, y = avg_life_expectancy, size = totalPop
        subtitle = "Point size is proportional to population size") +
   theme_bw()
 ```
+
+
+
 The scatter plot shows a positive relationship between GDP per capita and life 
 expectancy, which is expected since higher GDP per capita is generally 
 associated with better access to healthcare, nutrition, and living conditions. 
@@ -224,6 +229,7 @@ ggplot(gapminder_2019, aes(x = avg_gdp, y = avg_life_expectancy, size = totalPop
 
 
 3)
+
 Comparing the two plots, we can see a clear trend of global economic growth and improvement in life expectancy over the last 60 years. In 1960, there were clear differences between countries in terms of GDP per capita and life expectancy.
 There is still a lot of variation between countries and regions, showing that
 there's work to be done to achieve global economic and health equality.
@@ -279,26 +285,31 @@ LE_rank_2019
 ```
 
 8)
-```{r}
-gapminder %>%
-  filter(time %in% c(1960, 2019)) %>%
-  summarize(num_countries = n_distinct(name)) %>% 
-  mutate(rank_LE = rank(gapminder$lifeExpectancy)) %>%
-  mutate(relative_rank = rank_LE / num_countries) %>% 
-  filter(name == "United States of America") %>%
-  select(time, rank, num_countries, relative_rank)
+```{r message=FALSE, warning=FALSE}
+#gapminder %>%
+ # filter(time %in% c(1960, 2019)) %>%
+  #summarize(num_countries = n_distinct(name)) %>% 
+  #mutate(rank_LE = rank(gapminder$lifeExpectancy)) %>%
+  #mutate(relative_rank = rank_LE / num_countries) %>% 
+  #filter(name == "United States of America") %>%
+  #select(time, rank, num_countries, relative_rank)
 
 
-num_countries <- gapminder %>%
-  filter(!is.na(lifeExpectancy)) %>%
-  group_by(time) %>%
-  summarize(num_countries = n())
-num_countries
+#num_countries <- gapminder %>%
+ # filter(!is.na(lifeExpectancy)) %>%
+  #group_by(time) %>%
+  #summarize(num_countries = n())
+#num_countries
 
-relative_rank <- gapminder %>%
-  filter(!is.na(lifeExpectancy)) %>%
-  group_by(time) %>%
-  mutate(rank = dense_rank(-lifeExpectancy) / num_countries)
-relative_rank
+#relative_rank <- gapminder %>%
+ # filter(!is.na(lifeExpectancy)) %>%
+  #group_by(time) %>%
+  #mutate(rank = dense_rank(-lifeExpectancy) / num_countries)
+#relative_rank
+
+# I tried different ways of getting the relative rate divided by the number of 
+# countries in a certain year, but kept getting an error with my rank length.
+# I was going to get the total countries in each year, and divide the US life
+# expectancy rank by that number.
 ```
 
