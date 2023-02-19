@@ -282,9 +282,6 @@ better life expectancy in general.
 # the data from both years. 
 ```
 
-
-
-
 7)
 ```{r}
 LE_rank_1960 <- gapminder %>% 
