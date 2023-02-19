@@ -263,6 +263,28 @@ the life expectancy in regions that were struggling. The more advanced countries
 in Europe had a smaller raise in life expectancy since they've always had a
 better life expectancy in general.
 
+6)
+```{r message=FALSE, warning=FALSE}
+#gdp_data <- gapminder %>% 
+#  filter(time %in% c(1960, 2019)) %>%
+# group_by(name) %>% 
+# select(name, GDP_PC, time)
+#gdp_data
+
+#ggplot(gdp_data, aes(x = GDP_PC ,fill = factor(name))) +
+#  geom_histogram(alpha = 0.5, position = "identity", bins = 30) +
+#  scale_fill_manual(values = c("#66c2a5", "#fc8d62")) +
+# labs(title = "Distribution of GDP per capita in 1960 and 2019", x = "GDP per capita", y = "Frequency") +
+#  theme_bw()
+
+# I tried to get the the GDP_PC for the years 1960 and 2019 and I was going to
+# compare their values in the histogram, but I couldn't fix the plot to overlay
+# the data from both years. 
+```
+
+
+
+
 7)
 ```{r}
 LE_rank_1960 <- gapminder %>% 
